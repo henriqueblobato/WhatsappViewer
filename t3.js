@@ -3,8 +3,10 @@ const fs = require('fs');
 const qrcode = require("qrcode-terminal");
 const mongoose = require("mongoose");
 
+MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ww';
+
 mongoose.connect(
-    'mongodb://mongo:27017/ww',
+    MONGODB_URI,
     {useNewUrlParser: true, useUnifiedTopology: true}
 ).then(r => console.log("Connected to MongoDB"));
 
