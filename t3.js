@@ -3,6 +3,8 @@ const fs = require('fs');
 const qrcode = require("qrcode-terminal");
 const mongoose = require("mongoose");
 
+require('dotenv').config();
+
 MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ww';
 
 mongoose.connect(
