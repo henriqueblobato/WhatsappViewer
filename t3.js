@@ -7,10 +7,25 @@ require('dotenv').config();
 
 MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ww';
 
-mongoose.connect(
-    MONGODB_URI,
-    {useNewUrlParser: true, useUnifiedTopology: true}
-).then(r => console.log("Connected to MongoDB"));
+async function mongoConnect() {
+    await mongoose.connect(
+        MONGODB_URI,
+        {useNewUrlParser: true, useUnifiedTopology: true}
+    ).then(r => console.log("Connected to MongoDB")).catch( (e) => {
+            console.error("Error connecting to MongoDB", e);
+            process.exit(1);
+        }
+    )
+    return mongoose.connection.readyState;
+}
+
+// run mongoConnect function on async mode
+mongoConnect().then(
+    r => console.log('MongoDB connected', r)
+).catch((e) => {
+    console.error('Error connecting to MongoDB', e);
+    process.exit(1);
+})
 
 
 const messageSchema = new mongoose.Schema({
