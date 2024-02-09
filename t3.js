@@ -2,6 +2,8 @@ const { Client, Location, Poll, List, Buttons, LocalAuth } = require("whatsapp-w
 const fs = require('fs');
 const qrcode = require("qrcode-terminal");
 const mongoose = require("mongoose");
+const path = require('path');
+
 
 require('dotenv').config();
 
@@ -29,11 +31,11 @@ mongoConnect().then(
 
 
 const messageSchema = new mongoose.Schema({
-    from: { type: String, required: true },
-    to: { type: String, required: true },
-    body: { type: String, required: true },
-    timestamp: { type: Number, required: true },
-    hasMedia: { type: Boolean, default: false },
+    from: { type: String },
+    to: { type: String },
+    body: { type: String },
+    timestamp: { type: Number },
+    hasMedia: { type: Boolean },
     deviceType: String,
     isForwarded: { type: Boolean, default: false },
     forwardedScore: Number,
@@ -97,29 +99,24 @@ function saveMedia(media, user) {
         return;
     }
 
-    let folder = 'medias';
-    let userIdentification = user.pushname || user.number;
+    const folder = 'medias';
+    const userIdentification = user.pushname || user.number;
     const userFolder = `${folder}/${userIdentification}`;
-    let filename = Date.now();
+    const extensionFolder = `${userFolder}/${extension.substr(1)}`; // Remove the dot from extension
 
-    if (!fs.existsSync(userFolder)) {
-        fs.mkdirSync(userFolder, { recursive: true });
-        const json_beautify = JSON.stringify(user, null, 4);
-        fs.writeFile(`${userFolder}/info.json`, json_beautify, (err) => {
-            if (err) {
-                console.error('Error creating user info file', err);
-            }
-        });
-    }
-    if (fs.existsSync(filename)) {
-        console.log('Media already exists:', media.filename);
-        return;
+    // Create extension folder if it doesn't exist
+    if (!fs.existsSync(extensionFolder)) {
+        fs.mkdirSync(extensionFolder, { recursive: true });
     }
 
-    filename = `${userFolder}/${filename}${extension}`;
-    fs.writeFile(filename, dataBuffer, (err) => {
-        if (!err) {
-            console.log('Media saved as:', filename);
+    const filename = `${Date.now()}${extension}`;
+    const filePath = path.join(extensionFolder, filename);
+
+    fs.writeFile(filePath, dataBuffer, err => {
+        if (err) {
+            console.error('Error saving media:', err);
+        } else {
+            console.log('Media saved as:', filePath);
         }
     });
 }
@@ -158,17 +155,9 @@ client.on('message', async msg => {
 });
 
 client.on('message_revoke_everyone', async (after, before) => {
-    console.log('Message revoked');
-    if (before) {
-        before.body = `BEFORE: ${before.body}`
-        console.log('Before message: ', before.body);
-        saveMessageOnDb(before);
-    }
-    if (after) {
-        after.body = `AFTER: ${after.body}`
-        console.log('After message: ', after.body);
-        saveMessageOnDb(after);
-    }
+    let before_after = `${before ? before.body : ''} ${after ? after.body : ''}`
+    saveMessageOnDb(before_after);
+    console.log('Message revoked:', before_after);
 });
 
 let rejectCalls = true;
