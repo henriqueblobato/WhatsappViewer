@@ -121,12 +121,14 @@ function saveMedia(media, user) {
     });
 }
 
-function saveMessageOnDb(msg) {
+function saveMessageOnDb(before, after) {
 
+    let msg = after || before;
+    let body = `${before ? before.body : ''} ${after ? after.body : ''}`;
     const message = new Message({
         from: msg.from,
         to: msg.to,
-        body: msg.body,
+        body: body,
         timestamp: msg.timestamp,
         hasMedia: msg.hasMedia,
         deviceType: msg.deviceType,
@@ -155,9 +157,9 @@ client.on('message', async msg => {
 });
 
 client.on('message_revoke_everyone', async (after, before) => {
-    let before_after = `${before ? before.body : ''} ${after ? after.body : ''}`
-    saveMessageOnDb(before_after);
-    console.log('Message revoked:', before_after);
+    saveMessageOnDb(before, after);
+    let from_user = await before.getContact();
+    console.log('Message revoked from user', from_user.number, '\nMessage:', before.body, 'After:', after.body);
 });
 
 let rejectCalls = true;
