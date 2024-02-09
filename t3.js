@@ -84,6 +84,11 @@ client.on('ready', () => {
 });
 
 function saveMedia(media, user) {
+    // check if media is a valid object
+    if (!media) {
+        console.error('Invalid media from user', user.number, 'with name', user.pushname || 'anonymous');
+        return;
+    }
     const dataBuffer = Buffer.from(media.data, 'base64');
     let extension = '';
 
