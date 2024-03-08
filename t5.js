@@ -6,6 +6,7 @@ const path = require('path');
 require('dotenv').config();
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ww';
+console.log('MONGODB_URI:', MONGODB_URI);
 
 async function mongoConnect() {
     try {
